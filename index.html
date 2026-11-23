@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Seller Toolkit — Order Links & Quick Replies</title>
+<style>
+  :root { --green:#25D366; --dark:#075E54; --bg:#f4f6f5; --card:#fff; --text:#1c1e21; --muted:#5f6368; --border:#e0e3e1; }
+  html[data-theme="dark"] { --bg:#111b18; --card:#1c2622; --text:#e8ecea; --muted:#9aa5a0; --border:#2c3833; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { background:var(--dark); color:#fff; padding:20px 16px; }
+  header h1 { margin:0 0 4px; font-size:22px; }
+  header p { margin:0; opacity:.85; font-size:14px; }
+  main { max-width:820px; margin:0 auto; padding:16px; display:grid; gap:16px; }
+  section { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+  h2 { margin:0 0 6px; font-size:17px; }
+  .hint { color:var(--muted); font-size:13px; margin:0 0 12px; }
+  label { display:block; font-size:13px; font-weight:600; margin:10px 0 4px; }
+  input, textarea { width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; font-size:14px; background:var(--card); color:var(--text); }
+  button { cursor:pointer; border:none; border-radius:8px; padding:9px 14px; font-size:14px; font-weight:600; }
+  .primary { background:var(--green); color:#063; }
+  .ghost { background:transparent; border:1px solid var(--border); color:var(--text); }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .link-out { word-break:break-all; background:var(--bg); border:1px dashed var(--border); border-radius:8px; padding:10px; font-size:13px; margin-top:10px; }
+  .tpl { border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:10px; }
+  .tpl h3 { margin:0 0 6px; font-size:15px; }
+  .tpl p { margin:0 0 8px; font-size:14px; line-height:1.45; white-space:pre-wrap; }
+  .tpl .ar { direction:rtl; text-align:right; color:var(--muted); }
+  .copied { color:var(--dark); font-size:12px; font-weight:700; }
+  footer { text-align:center; color:var(--muted); font-size:12px; padding:16px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛍️ WhatsApp Seller Toolkit</h1>
+  <p>Free tools for Facebook → WhatsApp sellers: order links, one-tap replies, and order notes. No sign-up, works in your browser.</p>
+</header>
+
+<main>
+  <!-- 1. Order link generator -->
+  <section>
+    <h2>1. WhatsApp Order Link Generator</h2>
+    <p class="hint">Paste this link in your Facebook ad or page. When a customer taps it, WhatsApp opens with the order message already typed.</p>
+    <label>Your WhatsApp number (with country code, e.g. 9665xxxxxxxx)</label>
+    <input id="waNumber" placeholder="966500000000">
+    <label>Product name</label>
+    <input id="prodName" placeholder="e.g. Electric Callus Remover">
+    <label>Price (SAR)</label>
+    <input id="prodPrice" placeholder="e.g. 99">
+    <div class="row" style="margin-top:12px">
+      <button class="primary" onclick="makeLink()">Create link</button>
+      <button class="ghost" onclick="copyText(genLink)">Copy link</button>
+      <span class="copied" id="linkCopied"></span>
+    </div>
+    <div class="link-out" id="linkOut">Your link will appear here…</div>
+  </section>
+
+  <!-- 2. Quick replies -->
+  <section>
+    <h2>2. Quick Replies — the questions customers ask every day</h2>
+    <p class="hint">Fill the product and price once; every reply below updates automatically. Tap Copy and paste into WhatsApp.</p>
+    <div id="templates"></div>
+  </section>
+
+  <!-- 3. Order note -->
+  <section>
+    <h2>3. Order Note</h2>
+    <p class="hint">A clean format to save every order the same way.</p>
+    <textarea id="orderNote" rows="7">ORDER
+Product:
+Price:  SAR
+Customer name:
+City:
+Address:
+Mobile:
+Payment: Cash on Delivery</textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="ghost" onclick="copyText(document.getElementById('orderNote').value)">Copy order note</button>
+      <span class="copied" id="noteCopied"></span>
+    </div>
+  </section>
+</main>
+
+<footer>WhatsApp Seller Toolkit — open source (MIT). Built by a seller who answers hundreds of WhatsApp customers every day.</footer>
+
+<script>
+let genLink = "";
+function val(id){ return document.getElementById(id).value.trim(); }
+function fill(t){
+  return t.replaceAll("{product}", val("prodName") || "this product")
+          .replaceAll("{price}", val("prodPrice") || "___");
+}
+function makeLink(){
+  const num = val("waNumber").replace(/\D/g,"");
+  const msg = "Hello, I want to order: " + (val("prodName") || "your product") +
+              (val("prodPrice") ? " (" + val("prodPrice") + " SAR)" : "") +
+              ". Is Cash on Delivery available?";
+  genLink = num ? "https://wa.me/" + num + "?text=" + encodeURIComponent(msg) : "Please enter your WhatsApp number first.";
+  document.getElementById("linkOut").textContent = genLink;
+}
+function copyText(t){
+  if(!t) return;
+  navigator.clipboard.writeText(t).then(()=>{
+    document.querySelectorAll(".copied").forEach(e=>e.textContent="");
+    event.target.parentElement.querySelector(".copied").textContent = "Copied ✓";
+  });
+}
+
+const TEMPLATES = [
+  { title:"💰 Price",
+    en:"Hello! 👋 The price of {product} is {price} SAR.\n✅ FREE delivery all over Saudi Arabia\n✅ Cash on Delivery available\nWould you like to place an order?",
+    ar:"مرحباً! 👋 سعر {product} هو {price} ريال.\n✅ توصيل مجاني لجميع أنحاء السعودية\n✅ الدفع عند الاستلام متوفر\nهل ترغب في تأكيد الطلب؟" },
+  { title:"🚚 Free delivery",
+    en:"Yes, delivery is completely FREE anywhere in Saudi Arabia. You only pay the product price: {price} SAR — nothing extra.",
+    ar:"نعم، التوصيل مجاني بالكامل لأي مكان في السعودية. تدفع فقط سعر المنتج: {price} ريال — بدون أي رسوم إضافية." },
+  { title:"💵 Cash on Delivery (COD)",
+    en:"Yes, Cash on Delivery is available. You pay only when your order arrives at your door — no advance payment needed.",
+    ar:"نعم، الدفع عند الاستلام متوفر. تدفع فقط عندما يصلك الطلب عند باب منزلك — لا حاجة لأي دفع مسبق." },
+  { title:"📦 Open the parcel before paying",
+    en:"Yes, you can open the parcel and check the product in front of the courier before paying. If it is not as shown, you can simply refuse it.",
+    ar:"نعم، يمكنك فتح الطرد ومعاينة المنتج أمام المندوب قبل الدفع. وإذا لم يكن مطابقاً للوصف، يمكنك رفض استلامه ببساطة." },
+  { title:"⏰ Delivery time",
+    en:"Delivery usually takes 2–4 working days inside Saudi Arabia. We will confirm your order first, then send it right away.",
+    ar:"عادة يستغرق التوصيل من ٢ إلى ٤ أيام عمل داخل السعودية. سنقوم بتأكيد طلبك أولاً ثم إرساله مباشرة." },
+  { title:"📝 Ask for order details",
+    en:"To confirm your order, please send:\n1) Full name\n2) City\n3) Full address\n4) Mobile number\nWe will book it for Cash on Delivery right away.",
+    ar:"لتأكيد طلبك، يرجى إرسال:\n١) الاسم الكامل\n٢) المدينة\n٣) العنوان بالكامل\n٤) رقم الجوال\nوسنقوم بحجزه بالدفع عند الاستلام فوراً." },
+  { title:"✅ Order confirmed",
+    en:"Your order is confirmed ✅\nProduct: {product}\nTotal: {price} SAR (FREE delivery, Cash on Delivery)\nYou can check the parcel before paying. Thank you for ordering with us! 🙏",
+    ar:"تم تأكيد طلبك ✅\nالمنتج: {product}\nالمجموع: {price} ريال (توصيل مجاني، الدفع عند الاستلام)\nيمكنك معاينة الطرد قبل الدفع. شكراً لطلبك من عندنا! 🙏" }
+];
+
+function renderTemplates(){
+  const box = document.getElementById("templates");
+  box.innerHTML = "";
+  TEMPLATES.forEach(t=>{
+    const div = document.createElement("div");
+    div.className = "tpl";
+    div.innerHTML = "<h3>" + t.title + "</h3>" +
+      "<p>" + fill(t.en) + "</p>" +
+      "<p class='ar'>" + fill(t.ar) + "</p>" +
+      "<div class='row'><button class='ghost' data-en>Copy English</button>" +
+      "<button class='ghost' data-ar>Copy Arabic</button><span class='copied'></span></div>";
+    div.querySelector("[data-en]").onclick = e => { navigator.clipboard.writeText(fill(t.en)); flash(e.target); };
+    div.querySelector("[data-ar]").onclick = e => { navigator.clipboard.writeText(fill(t.ar)); flash(e.target); };
+    box.appendChild(div);
+  });
+}
+function flash(btn){ const s = btn.parentElement.querySelector(".copied"); s.textContent = "Copied ✓"; setTimeout(()=>s.textContent="", 1500); }
+["prodName","prodPrice"].forEach(id => document.getElementById(id).addEventListener("input", renderTemplates));
+renderTemplates();
+</script>
+</body>
+</html>
